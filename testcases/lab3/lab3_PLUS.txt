@@ -1,0 +1,9 @@
+int main() {
+    int x = 42;
+    String s = "Hello \"World!\"";
+    String y = "abc\t\n"
+    //下面是比较语句
+    if (x >= 10) {
+        x = x + 1;
+    }
+}
