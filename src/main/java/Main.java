@@ -1,41 +1,24 @@
-import generated.Calc1.Calc1;
+import generated.Calc1.Calc1Lexer;
+import generated.Calc1.Calc1Parser;
 import org.antlr.v4.runtime.*;
-
-import java.io.IOException;
-import java.util.List;
 
 
 public class Main {
     public static void main(String[] args) {
         // 从字符串获取字符流。若要从文件读取，可使用 CharStreams.fromFileName("文件路径")
-        CharStream charStream = null;
-        try {
-            charStream = CharStreams.fromFileName("./testcases/lab3/lab3_String.txt");
-            Calc1 lexer = new Calc1(charStream);
-
-            // 基于词法分析器实例，创建 Token 流
-            CommonTokenStream tokens = new CommonTokenStream(lexer);
-
-            // 调用 fill() 方法，让词法分析器开始工作，填充 Token 流
-            tokens.fill();
-            Vocabulary vocabulary = lexer.getVocabulary();
-
-            // 打印 Token 流信息
-            int count = 0;
-            for (Token token : tokens.getTokens()) {
-                if (token.getChannel() == 0) {
-                    System.out.printf("Line:%d:%d %s %s\n",
-                            token.getLine(),
-                            token.getCharPositionInLine(),
-                            vocabulary.getSymbolicName(token.getType()),
-                            token.getText());
-                } else if (token.getChannel() == 1) {
-                    count++;
-                }
-            }
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        // 把要解析的字符串喂给 ANTLR
+        CharStream input = CharStreams.fromString("2 + 3 * (5 - 4) / 2\n 3-4/2\n20 /4 -3\n((1+2)*3-5)/2 ");
+        // 词法分析器
+        Calc1Lexer lexer = new Calc1Lexer(input);
+        // Token 流
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        // 语法分析器
+        Calc1Parser parser = new Calc1Parser(tokens);
+        // 定义Visitor根节点 root context
+        Calc1Parser.RootContext context = parser.root();
+        CalcLab5Visitor visitor = new CalcLab5Visitor();
+        for (Calc1Parser.ExprContext expr : context.expr()) {
+            System.out.printf("%s = %s\n", expr.getText(), visitor.visit(expr));
         }
     }
 }

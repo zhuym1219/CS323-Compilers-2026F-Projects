@@ -21,4 +21,12 @@ clean:
 jar:
 	mvn jar:jar
 
+tree:
+	echo '1 + 2 * 3 /4' | \
+    java -cp "bin:libs/antlr-4.13.2-complete.jar" \
+        org.antlr.v4.gui.TestRig \
+        generated.Calc1.Calc1 \
+        expr \
+        -gui
+
 
