@@ -1,24 +1,49 @@
-import generated.Calc1.Calc1Lexer;
-import generated.Calc1.Calc1Parser;
+import generated.Splc.SplcLexer;
+import generated.Splc.SplcParser;
+import impl.Scope;
+import impl.SplcSemanticError;
+import impl.symbol.FunctionSymbol;
+import impl.symbol.VariableSymbol;
 import org.antlr.v4.runtime.*;
+
+import java.io.IOException;
+import java.util.List;
 
 
 public class Main {
     public static void main(String[] args) {
-        // 从字符串获取字符流。若要从文件读取，可使用 CharStreams.fromFileName("文件路径")
-        // 把要解析的字符串喂给 ANTLR
-        CharStream input = CharStreams.fromString("2 + 3 * (5 - 4) / 2\n 3-4/2\n20 /4 -3\n((1+2)*3-5)/2 ");
-        // 词法分析器
-        Calc1Lexer lexer = new Calc1Lexer(input);
-        // Token 流
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-        // 语法分析器
-        Calc1Parser parser = new Calc1Parser(tokens);
-        // 定义Visitor根节点 root context
-        Calc1Parser.RootContext context = parser.root();
-        CalcLab5Visitor visitor = new CalcLab5Visitor();
-        for (Calc1Parser.ExprContext expr : context.expr()) {
-            System.out.printf("%s = %s\n", expr.getText(), visitor.visit(expr));
+        CharStream input = null;
+        try {
+            input = CharStreams.fromFileName("testcases/symbol/base3.splc");
+            SplcLexer lexer = new SplcLexer(input);
+            CommonTokenStream tokens = new CommonTokenStream(lexer);
+            SplcParser parser = new SplcParser(tokens);
+            SplcParser.ProgramContext program = parser.program();
+            Lab6Visitor visitor = new Lab6Visitor();
+            visitor.visit(program);
+            List<SplcSemanticError> errors = visitor.getErrors();
+            if(errors.isEmpty()) {
+                Scope globalScope = visitor.getGlobalScope();
+                printGlobalDeclarations(globalScope);
+            }else{
+                for(SplcSemanticError error : errors) {
+                    System.err.println(error.printBase());
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void printGlobalDeclarations(Scope globalScope) {
+        System.out.println("Variables:");
+        for (VariableSymbol v : globalScope.getVariables().values()) {
+            System.out.println(v.getName() + ": " + v.getType());
+        }
+        System.out.println();
+        System.out.println("Functions:");
+        for (FunctionSymbol f : globalScope.getFunctions().values()) {
+            System.out.println(f);
         }
     }
 }
